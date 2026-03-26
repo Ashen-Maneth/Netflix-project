@@ -1,0 +1,130 @@
+stages:
+  - Unit_Tests
+  - Code_Analysis
+  - Dependency_Scan
+  - Build
+  - Security_Scan
+  - Docker_Push
+  - Deploy
+  - Dynamic_Scan
+
+variables:
+  IMAGE_NAME: $DOCKER_USERNAME/netflix-clone
+  IMAGE_TAG: $CI_PIPELINE_IID
+  STAGING_URL: "http://13.60.217.236:3000"
+
+# -------------------------
+# UNIT TESTS
+# -------------------------
+Unit_Tests:
+  stage: Unit_Tests
+  image: node:18-alpine
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm install
+    - npm test
+  artifacts:
+    paths:
+      - coverage/
+    expire_in: 1 week
+
+# -------------------------
+# SONARQUBE ANALYSIS
+# -------------------------
+sonarqube_check:
+  stage: Code_Analysis
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  script:
+    - sonar-scanner
+      -Dsonar.projectKey=netflix-clone
+      -Dsonar.sources=.
+      -Dsonar.host.url=https://sonarcloud.io
+      -Dsonar.login=$SONAR_TOKEN
+
+# -------------------------
+# DEPENDENCY SCAN
+# -------------------------
+owasp_dependency_scan:
+  stage: Dependency_Scan
+  image:
+    name: owasp/dependency-check:latest
+    entrypoint: [""]
+  script:
+    - /usr/share/dependency-check/bin/dependency-check.sh
+      --project "Netflix-Clone"
+      --scan .
+      --format "HTML"
+      --out .
+      --disableNodeAudit
+  artifacts:
+    paths:
+      - dependency-check-report.html
+    expire_in: 1 week
+  allow_failure: true
+
+# -------------------------
+# BUILD + PUSH DOCKER IMAGE
+# -------------------------
+build_and_push_image:
+  stage: Build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:latest
+
+# -------------------------
+# TRIVY SCAN (AFTER PUSH)
+# -------------------------
+trivy_container_scan:
+  stage: Security_Scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - docker pull $IMAGE_NAME:latest
+    - trivy image --severity HIGH,CRITICAL $IMAGE_NAME:latest
+  allow_failure: true
+
+# -------------------------
+# DEPLOY TO EC2
+# -------------------------
+deploy_to_ec2:
+  stage: Deploy
+  tags:
+    - EC2
+  script:
+    - docker pull $IMAGE_NAME:latest
+    - docker stop netflix-app || true
+    - docker rm netflix-app || true
+    - docker run -d -p 3000:3000 --restart always --name netflix-app $IMAGE_NAME:latest
+    - docker image prune -f
+
+# -------------------------
+# DYNAMIC SECURITY SCAN
+# -------------------------
+owasp_zap_scan:
+  stage: Dynamic_Scan
+  image:
+    name: zaproxy/zap-stable
+    entrypoint: [""]
+  script:
+    - mkdir -p /zap/wrk
+    - zap-baseline.py -t $STAGING_URL -r zap-report.html || true
+  artifacts:
+    paths:
+      - zap-report.html
+    expire_in: 1 week
+  allow_failure: true
