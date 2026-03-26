@@ -44,12 +44,11 @@ sonarqube_check:
   script:
     - >
       sonar-scanner
-      -Dsonar.projectKey=netflix-clone
+      -Dsonar.projectKey=Ashen-Maneth_Netflix-project
       -Dsonar.organization=ashen-maneth
       -Dsonar.sources=.
       -Dsonar.host.url=https://sonarcloud.io
       -Dsonar.token=$SONAR_TOKEN
-
 # -------------------------
 # DEPENDENCY SCAN
 # -------------------------
