@@ -59,11 +59,12 @@ owasp_dependency_scan:
     entrypoint: [""]
   script:
     - /usr/share/dependency-check/bin/dependency-check.sh
-      --project "Netflix-Clone"
-      --scan .
-      --format "HTML"
-      --out .
-      --disableNodeAudit
+      --project "Netflix-Clone" 
+      --scan . 
+      --format "HTML" 
+      --out . 
+      --disableNodeAudit 
+      --nvdApiKey $NVD_API_KEY
   artifacts:
     paths:
       - dependency-check-report.html
@@ -92,7 +93,7 @@ build_and_push_image:
 trivy_container_scan:
   stage: Security_Scan
   image:
-    name: aquasec/trivy:latest
+    name: aquasec/trivy:0.54.1
     entrypoint: [""]
   script:
     - docker pull $IMAGE_NAME:latest
