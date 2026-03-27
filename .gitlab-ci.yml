@@ -24,7 +24,7 @@ Unit_Tests:
       - node_modules/
   script:
     - npm install
-    - npm test
+    - npm test -- --coverage
   artifacts:
     paths:
       - coverage/
@@ -49,6 +49,7 @@ sonarqube_check:
       -Dsonar.sources=.
       -Dsonar.host.url=https://sonarcloud.io
       -Dsonar.token=$SONAR_TOKEN
+      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 # -------------------------
 # DEPENDENCY SCAN
 # -------------------------
@@ -115,7 +116,7 @@ deploy_to_ec2:
     - docker pull $IMAGE_NAME:latest
     - docker stop netflix-app || true
     - docker rm netflix-app || true
-    - docker run -d -p 3000:3000 --restart always --name netflix-app $IMAGE_NAME:latest
+    - docker run -d -p 80:3000 --restart always --name netflix-app $IMAGE_NAME:latest
     - docker image prune -f
 
 # -------------------------
