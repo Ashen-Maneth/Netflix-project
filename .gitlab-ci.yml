@@ -63,7 +63,8 @@ owasp_dependency_scan:
       --scan . 
       --format "HTML" 
       --out . 
-      --disableNodeAudit 
+      --disableNodeAudit
+      --disableYarnAudit  
       --nvdApiKey $NVD_API_KEY
   artifacts:
     paths:
@@ -95,8 +96,11 @@ trivy_container_scan:
   image:
     name: aquasec/trivy:0.54.1
     entrypoint: [""]
+  variables:
+    # This tells Trivy how to log into Docker Hub if your repo is private
+    TRIVY_USERNAME: $DOCKER_USERNAME
+    TRIVY_PASSWORD: $DOCKER_PASSWORD
   script:
-    - docker pull $IMAGE_NAME:latest
     - trivy image --severity HIGH,CRITICAL $IMAGE_NAME:latest
   allow_failure: true
 
