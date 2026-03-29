@@ -8,6 +8,9 @@
 # env
 .env
 
+# aws cli installer bundle
+/aws
+
 # testing
 /coverage
 
