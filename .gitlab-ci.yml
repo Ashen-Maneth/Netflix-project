@@ -3,8 +3,6 @@ stages:
   - Code_Analysis
   - Dependency_Scan
   - Build
-  - Security_Scan
-  - Docker_Push
   - Deploy
   - Dynamic_Scan
 
@@ -74,63 +72,58 @@ owasp_dependency_scan:
   allow_failure: true
 
 # -------------------------
-# BUILD + PUSH DOCKER IMAGE
+# BUILD -> SCAN -> PUSH
 # -------------------------
-build_and_push_image:
+build_scan_push_image:
   stage: Build
   image: docker:latest
   services:
     - docker:dind
   before_script:
+    # 1. Log into Docker Hub
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    # 2. Install Trivy into this temporary Docker container
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
   script:
+    # Step 1: Build the image
     - docker build -t $IMAGE_NAME:$IMAGE_TAG .
     - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    
+    # Step 2: Scan the image BEFORE pushing
+    # (--exit-code 1 means if it finds High/Critical bugs, it stops and FAILS the pipeline right here)
+    - trivy image --exit-code 1 --severity HIGH,CRITICAL $IMAGE_NAME:latest
+    
+    # Step 3: If the scan above passes safely, push to Docker Hub!
     - docker push $IMAGE_NAME:$IMAGE_TAG
     - docker push $IMAGE_NAME:latest
 
-# -------------------------
-# TRIVY SCAN (AFTER PUSH)
-# -------------------------
-trivy_container_scan:
-  stage: Security_Scan
-  image:
-    name: aquasec/trivy:0.54.1
-    entrypoint: [""]
-  variables:
-    # This tells Trivy how to log into Docker Hub if your repo is private
-    TRIVY_USERNAME: $DOCKER_USERNAME
-    TRIVY_PASSWORD: $DOCKER_PASSWORD
-  script:
-    - trivy image --severity HIGH,CRITICAL $IMAGE_NAME:latest
-  allow_failure: true
+# # -------------------------
+# # DEPLOY TO EC2
+# # -------------------------
+# deploy_to_k8s:
+#   stage: Deploy
+#   image: 
+#     name: bitnami/kubectl:latest
+#     entrypoint: [""] 
+#   script:
+#     - export KUBECONFIG=$KUBE_CONFIG_FILE 
+#     - kubectl set image deployment/netflix-clone-deployment netflix-container=$IMAGE_NAME:latest 
 
-# -------------------------
-# DEPLOY TO EC2
-# -------------------------
-deploy_to_k8s:
-  stage: Deploy
-  image: 
-    name: bitnami/kubectl:latest
-    entrypoint: [""] 
-  script:
-    - export KUBECONFIG=$KUBE_CONFIG_FILE 
-    - kubectl set image deployment/netflix-clone-deployment netflix-container=$IMAGE_NAME:latest 
-
-# -------------------------
-# DYNAMIC SECURITY SCAN
-# -------------------------
-owasp_zap_scan:
-  stage: Dynamic_Scan
-  image:
-    name: zaproxy/zap-stable
-    entrypoint: [""]
-  script:
-    - mkdir -p /zap/wrk
-    - zap-baseline.py -t $STAGING_URL -r zap-report.html || true
-    - cp /zap/wrk/zap-report.html ./zap-report.html
-  artifacts:
-    paths:
-      - zap-report.html
-    expire_in: 1 week
-  allow_failure: true
+# # -------------------------
+# # DYNAMIC SECURITY SCAN
+# # -------------------------
+# owasp_zap_scan:
+#   stage: Dynamic_Scan
+#   image:
+#     name: zaproxy/zap-stable
+#     entrypoint: [""]
+#   script:
+#     - mkdir -p /zap/wrk
+#     - zap-baseline.py -t $STAGING_URL -r zap-report.html || true
+#     - cp /zap/wrk/zap-report.html ./zap-report.html
+#   artifacts:
+#     paths:
+#       - zap-report.html
+#     expire_in: 1 week
+#   allow_failure: true
