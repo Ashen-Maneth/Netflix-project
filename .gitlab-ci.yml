@@ -110,13 +110,12 @@ trivy_container_scan:
 # -------------------------
 deploy_to_k8s:
   stage: Deploy
-  image: bitnami/kubectl:latest  # We use a container that has kubectl installed
+  image: 
+    name: bitnami/kubectl:latest
+    entrypoint: [""] 
   script:
-    # 1. We authenticate with the Kubernetes Cluster (using a secret token)
     - export KUBECONFIG=$KUBE_CONFIG_FILE 
-    
-    # 2. We tell Kubernetes: "Update the blueprint with the new image!"
-    - kubectl set image deployment/netflix-clone-deployment netflix-containe
+    - kubectl set image deployment/netflix-clone-deployment netflix-container=$IMAGE_NAME:latest 
 
 # -------------------------
 # DYNAMIC SECURITY SCAN

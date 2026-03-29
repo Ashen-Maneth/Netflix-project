@@ -1,0 +1,10 @@
+replicaCount: 3
+
+image:
+  repository: ashenmaneth/netflix-clone
+  tag: latest
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 3000
