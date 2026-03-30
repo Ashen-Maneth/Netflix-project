@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
+import Chip from "@mui/material/Chip";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import useOffSetTop from "src/hooks/useOffSetTop";
@@ -60,6 +61,19 @@ const MainHeader = () => {
     >
       <Toolbar disableGutters>
         <Logo sx={{ mr: { xs: 2, sm: 4 } }} />
+
+        <Chip
+          label="NEW UI LIVE"
+          size="small"
+          color="error"
+          sx={{
+            mr: 2,
+            height: 22,
+            fontSize: 11,
+            fontWeight: 700,
+            display: "inline-flex",
+          }}
+        />
 
         <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
           <IconButton
