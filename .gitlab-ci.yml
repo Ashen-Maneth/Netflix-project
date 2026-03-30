@@ -106,7 +106,9 @@ build_scan_push_image:
 # -------------------------
 update_gitops_repo:
   stage: Update_Manifest
-  image: alpine/git
+  image:
+    name: alpine/git
+    entrypoint: [""]
   script:
     - 'sed -i "s/tag: .*/tag: $CI_PIPELINE_IID/g" netflix-chart/values.yaml'
     - git config user.email "gitlab-bot@example.com"
