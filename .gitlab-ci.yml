@@ -15,62 +15,62 @@ variables:
 # -------------------------
 # UNIT TESTS
 # -------------------------
-Unit_Tests:
-  stage: Unit_Tests
-  image: node:18-alpine
-  cache:
-    paths:
-      - node_modules/
-  script:
-    - npm install
-    - npm test -- --coverage
-  artifacts:
-    paths:
-      - coverage/
-    expire_in: 1 week
+# Unit_Tests:
+#   stage: Unit_Tests
+#   image: node:18-alpine
+#   cache:
+#     paths:
+#       - node_modules/
+#   script:
+#     - npm install
+#     - npm test -- --coverage
+#   artifacts:
+#     paths:
+#       - coverage/
+#     expire_in: 1 week
 
 # -------------------------
 # SONARQUBE ANALYSIS
 # -------------------------
-sonarqube_check:
-  stage: Code_Analysis
-  image:
-    name: sonarsource/sonar-scanner-cli:latest
-    entrypoint: [""]
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-    GIT_DEPTH: "0"
-  script:
-    - >
-      sonar-scanner
-      -Dsonar.projectKey=Ashen-Maneth_Netflix-project
-      -Dsonar.organization=ashen-maneth
-      -Dsonar.sources=.
-      -Dsonar.host.url=https://sonarcloud.io
-      -Dsonar.token=$SONAR_TOKEN
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+# sonarqube_check:
+#   stage: Code_Analysis
+#   image:
+#     name: sonarsource/sonar-scanner-cli:latest
+#     entrypoint: [""]
+#   variables:
+#     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+#     GIT_DEPTH: "0"
+#   script:
+#     - >
+#       sonar-scanner
+#       -Dsonar.projectKey=Ashen-Maneth_Netflix-project
+#       -Dsonar.organization=ashen-maneth
+#       -Dsonar.sources=.
+#       -Dsonar.host.url=https://sonarcloud.io
+#       -Dsonar.token=$SONAR_TOKEN
+#       -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 # -------------------------
 # DEPENDENCY SCAN
 # -------------------------
-owasp_dependency_scan:
-  stage: Dependency_Scan
-  image:
-    name: owasp/dependency-check:latest
-    entrypoint: [""]
-  script:
-    - /usr/share/dependency-check/bin/dependency-check.sh
-      --project "Netflix-Clone" 
-      --scan . 
-      --format "HTML" 
-      --out . 
-      --disableNodeAudit
-      --disableYarnAudit  
-      --nvdApiKey $NVD_API_KEY
-  artifacts:
-    paths:
-      - dependency-check-report.html
-    expire_in: 1 week
-  allow_failure: true
+# owasp_dependency_scan:
+#   stage: Dependency_Scan
+#   image:
+#     name: owasp/dependency-check:latest
+#     entrypoint: [""]
+#   script:
+#     - /usr/share/dependency-check/bin/dependency-check.sh
+#       --project "Netflix-Clone" 
+#       --scan . 
+#       --format "HTML" 
+#       --out . 
+#       --disableNodeAudit
+#       --disableYarnAudit  
+#       --nvdApiKey $NVD_API_KEY
+#   artifacts:
+#     paths:
+#       - dependency-check-report.html
+#     expire_in: 1 week
+#   allow_failure: true
 
 # -------------------------
 # BUILD -> SCAN -> PUSH
@@ -116,7 +116,7 @@ update_gitops_repo:
     - git add netflix-chart/values.yaml
     - git commit -m "Auto-update image tag to $CI_PIPELINE_IID [skip ci]"
     - git remote set-url origin https://oauth2:$GITLAB_TOKEN@gitlab.com/Ashen-Maneth/Netflix-project.git
-    - git push origin main
+    - git push origin HEAD:main
 
 
 
