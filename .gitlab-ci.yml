@@ -108,7 +108,7 @@ update_gitops_repo:
   stage: Update_Manifest
   image: alpine/git
   script:
-    - sed -i "s/tag: .*/tag: $CI_PIPELINE_IID/g" netflix-chart/values.yaml
+    - 'sed -i "s/tag: .*/tag: $CI_PIPELINE_IID/g" netflix-chart/values.yaml'
     - git config user.email "gitlab-bot@example.com"
     - git config user.name "GitLab CI Bot"
     - git add netflix-chart/values.yaml
@@ -137,7 +137,7 @@ update_gitops_repo:
 
 
 
-    
+
 
 # # -------------------------
 # # DEPLOY TO EC2
