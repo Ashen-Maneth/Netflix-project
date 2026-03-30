@@ -3,8 +3,9 @@ stages:
   - Code_Analysis
   - Dependency_Scan
   - Build
-  - Deploy
-  - Dynamic_Scan
+  - Update_Manifest
+  # - Deploy
+  # - Dynamic_Scan
 
 variables:
   IMAGE_NAME: $DOCKER_USERNAME/netflix-clone
@@ -97,6 +98,46 @@ build_scan_push_image:
     # Step 3: If the scan above passes safely, push to Docker Hub!
     - docker push $IMAGE_NAME:$IMAGE_TAG
     - docker push $IMAGE_NAME:latest
+
+
+
+    # -------------------------
+# AUTO-UPDATE GITOPS REPO
+# -------------------------
+update_gitops_repo:
+  stage: Update_Manifest
+  image: alpine/git
+  script:
+    - sed -i "s/tag: .*/tag: $CI_PIPELINE_IID/g" netflix-chart/values.yaml
+    - git config user.email "gitlab-bot@example.com"
+    - git config user.name "GitLab CI Bot"
+    - git add netflix-chart/values.yaml
+    - git commit -m "Auto-update image tag to $CI_PIPELINE_IID [skip ci]"
+    - git remote set-url origin https://oauth2:$GITLAB_TOKEN@gitlab.com/Ashen-Maneth/Netflix-project.git
+    - git push origin main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 # # -------------------------
 # # DEPLOY TO EC2
