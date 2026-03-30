@@ -2,7 +2,7 @@ replicaCount: 5
 
 image:
   repository: ashenmaneth/netflix-clone
-  tag: 19
+  tag: 21
 
 service:
   type: LoadBalancer
