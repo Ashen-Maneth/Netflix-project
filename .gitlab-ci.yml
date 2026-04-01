@@ -52,25 +52,25 @@ sonarqube_check:
 # -------------------------
 # DEPENDENCY SCAN
 # -------------------------
-# owasp_dependency_scan:
-#   stage: Dependency_Scan
-#   image:
-#     name: owasp/dependency-check:latest
-#     entrypoint: [""]
-#   script:
-#     - /usr/share/dependency-check/bin/dependency-check.sh
-#       --project "Netflix-Clone" 
-#       --scan . 
-#       --format "HTML" 
-#       --out . 
-#       --disableNodeAudit
-#       --disableYarnAudit  
-#       --nvdApiKey $NVD_API_KEY
-#   artifacts:
-#     paths:
-#       - dependency-check-report.html
-#     expire_in: 1 week
-#   allow_failure: true
+owasp_dependency_scan:
+  stage: Dependency_Scan
+  image:
+    name: owasp/dependency-check:latest
+    entrypoint: [""]
+  script:
+    - /usr/share/dependency-check/bin/dependency-check.sh
+      --project "Netflix-Clone" 
+      --scan . 
+      --format "HTML" 
+      --out . 
+      --disableNodeAudit
+      --disableYarnAudit  
+      --nvdApiKey $NVD_API_KEY
+  artifacts:
+    paths:
+      - dependency-check-report.html
+    expire_in: 1 week
+  allow_failure: true
 
 # -------------------------
 # BUILD -> SCAN -> PUSH
