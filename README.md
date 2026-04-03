@@ -2,8 +2,8 @@
 
 ![Architecture: Cloud-Native](https://img.shields.io/badge/Architecture-Cloud--Native-blue)
 ![Deployment: GitOps](https://img.shields.io/badge/Deployment-GitOps-orange)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-blue?logo=kubernetes)
-![Terraform](https://img.shields.io/badge/Terraform-IaC-purple?logo=terraform)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-blue?logo=kubernetes)](https://aws.amazon.com/eks/)
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-purple?logo=terraform)](https://www.terraform.io/)
 ![Argo CD](https://img.shields.io/badge/ArgoCD-Self--Healing-green)
 
 A production-grade, fully automated DevSecOps pipeline deploying a MERN-stack Netflix Clone to an AWS Elastic Kubernetes Service (EKS) cluster. This project demonstrates modern infrastructure management using Infrastructure as Code (IaC), shift-left security practices, and a pull-based GitOps continuous delivery model.
